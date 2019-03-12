@@ -22,6 +22,9 @@ class LinAlgSimpleIteration:
         self.x_old = self.X[:]
         self.x_new = self.B[:]
 
+    def __str__(self):
+        return f"Результат: {self.x_new}"
+
     def _check_first_condition(self):
         result = []
         for row in self.A:
@@ -31,13 +34,7 @@ class LinAlgSimpleIteration:
                 result.append(False)
         return result
 
-    def _check(self):
-        for i in range(len(self.x_old)):
-            if abs(self.x_old[i] - self.x_new[i]) >= self.epsilon:
-                return False
-        return True
-
-    def iterate(self):
+    def _iterate(self):
         self.x_new = self.B[:]
         self.iterations += 1
         for index, row in enumerate(self.A):
@@ -50,9 +47,9 @@ class LinAlgSimpleIteration:
     def solve(self):
         if self._check_first_condition():
             while True:
-                self.iterate()  # iterate function
+                self._iterate()  # iterate function
                 print(f"iteration {self.iterations}", self.x_new)
-                if self._check():
+                if all([abs(a - b) < self.epsilon for a, b in zip(self.x_new, self.x_old)]):
                     break
                 else:
                     self.x_old = self.x_new
@@ -60,5 +57,27 @@ class LinAlgSimpleIteration:
             print("Умова не виконана")
 
 
-x = LinAlgSimpleIteration(A, B, epsilon= 0.0000001)
-x.solve()
+class LinalgZeidel(LinAlgSimpleIteration):
+
+    def _iterate(self):
+        self.x_new = self.B[:]
+        self.iterations += 1
+        for index, row in enumerate(self.A):
+            denominator_sum = 0
+            for idx, item in enumerate(row):
+                if not idx == index:
+                    if idx < index:
+                        denominator_sum += row[idx] * self.x_new[idx]
+                    else:
+                        denominator_sum += row[idx] * self.x_old[idx]
+            self.x_new[index] = (self.x_new[index] - denominator_sum) / row[index]
+
+
+if __name__ == '__main__':
+    x = LinAlgSimpleIteration(A, B, epsilon=0.00000001)
+    x.solve()
+
+    y = LinalgZeidel(A, B, epsilon=0.00000001)
+    y.solve()
+    print(x)
+    print(y)

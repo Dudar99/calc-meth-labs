@@ -1,11 +1,11 @@
 A = [
-    [0.405, 0.05, 0.04, 0.0, 0.09],
-    [-0.061, 0.53, 0.073, 0.11, -0.06],
-    [0.07, -0.036, 0.38, 0.03, 0.02],
-    [-0.05, 0.0, 0.066, 0.58, 0.23],
-    [0.0, 0.081, -0.05, -0.0, 0.41]
+    [0.38, -0.05, 0.01, 0.02, 0.07],
+    [0.052, 0.595, 0.0, -0.04, 0.04],
+    [0.03, 0.0, 0.478, -0.14, 0.08],
+    [-0.06, 0.126, 0.0, 0.47, -0.02],
+    [0.25, 0.0, 0.09, 0.01, 0.56]
 ]
-B = [-1.475, -2.281, -0.296, 0.492, 1.454]
+B = [-2.32, -2.544, 3.238, -1.534, -0.12]
 
 
 class LinAlgSimpleIteration:
@@ -23,7 +23,9 @@ class LinAlgSimpleIteration:
         self.x_new = self.B[:]
 
     def __str__(self):
-        return f"Результат: {self.x_new}"
+        for idx, item in enumerate(self.x_new):
+            print(idx, -self.x_new[idx])
+        return ""
 
     def _check_first_condition(self):
         result = []
@@ -38,11 +40,10 @@ class LinAlgSimpleIteration:
         self.x_new = self.B[:]
         self.iterations += 1
         for index, row in enumerate(self.A):
-            denominator_sum = 0
+            denominator_sum = self.x_old[index] + self.B[index]
             for idx, item in enumerate(row):
-                if not idx == index:
-                    denominator_sum += row[idx] * self.x_old[idx]
-            self.x_new[index] = (self.x_new[index] - denominator_sum) / row[index]
+                denominator_sum -= row[idx] * self.x_old[idx]
+            self.x_new[index] = denominator_sum
 
     def solve(self):
         if self._check_first_condition():
@@ -55,6 +56,14 @@ class LinAlgSimpleIteration:
                     self.x_old = self.x_new
         else:
             print("Умова не виконана")
+
+    def resignation(self):
+        print("Нев'язка:")
+        for i in range(len(self.x_new)):
+            _sum = 0
+            for j in range(len(self.A[i])):
+                _sum += self.A[i][j] * self.x_new[j]
+            print(f"(f - Ax){i} = {self.B[i] - _sum}")
 
 
 class LinalgZeidel(LinAlgSimpleIteration):
@@ -74,10 +83,9 @@ class LinalgZeidel(LinAlgSimpleIteration):
 
 
 if __name__ == '__main__':
-    x = LinAlgSimpleIteration(A, B, epsilon=0.00000001)
+    # x = input("Enter precision:")
+    x = LinalgZeidel(A, B, epsilon=0.001)
     x.solve()
-
-    y = LinalgZeidel(A, B, epsilon=0.00000001)
-    y.solve()
     print(x)
-    print(y)
+    x.resignation()
+
